@@ -178,25 +178,12 @@ def addMember():
         groupName = (requestData["groupName"].split(","))[0]
         member_username = requestData["member_username"]
 
-        #was getting an issue where i could add a nonexisting user into any groups
-        #despite the foreign key constraint resolved this by manually checking if user exists first
+        #originally had checking code here but that was made redundant after changing database engine to InnoDB, no foreign key issues now
         try:
             with connection.cursor() as cursor:
-                query = "SELECT username FROM Person WHERE username = %s"
-                cursor.execute(query, (member_username))
-                exist = cursor.fetchall()
-                if (not exist):
-                    error = "%s does not exist." % (member_username)
-                    return render_template("home.html", error=error)
-                query = "SELECT * FROM BelongTo WHERE member_username=%s AND owner_username=%s AND groupName=%s"
-                cursor.execute(query, (member_username, owner_username, groupName))
-                exist = cursor.fetchall()
-                if (exist):
-                    error = "%s is already in the group %s made by %s." % (member_username, groupName, owner_username)
-                    return render_template("home.html", error=error)
 
-                query2 = "INSERT INTO BelongTo (member_username, owner_username, groupName) VALUES (%s, %s, %s)"
-                cursor.execute(query2, (member_username, owner_username, groupName))
+                query = "INSERT INTO BelongTo (member_username, owner_username, groupName) VALUES (%s, %s, %s)"
+                cursor.execute(query, (member_username, owner_username, groupName))
 
         except pymysql.err.IntegrityError:
             error = "%s is already in the group %s made by %s or does not exist." % (member_username, groupName, owner_username)
@@ -207,7 +194,7 @@ def addMember():
     error = "An error has occurred. Please try again."
     return render_template("addFriend.html", error=error)
 
-#These are my methods for sending someone a follow requset
+#These are my methods for sending someone a follow request and for the and for the followed user to manage that request
 
 #This creates the html forms
 @app.route("/follow", methods=["GET"])
@@ -217,37 +204,106 @@ def follow():
 #This method proccesses the form and validates any query for sending a follow request
 @app.route("/sendFollow", methods=["POST"])
 @login_required
-def addMember():
+def sendFollow():
     if request.form:
         requestData = request.form
         username_followed = requestData["username_followed"]
         username_follower = session["username"]
         followstatus = False
 
-        #was getting an issue where i could add a nonexisting user into any groups
-        #despite the foreign key constraint resolved this by manually checking if user exists first
         try:
             with connection.cursor() as cursor:
-                #query = "SELECT username FROM Person WHERE username = %s"
-                #cursor.execute(query, (member_username))
-                #exist = cursor.fetchall()
-                #if (not exist):
-                #    error = "%s does not exist." % (member_username)
-                #    return render_template("home.html", error=error)
-                #query = "SELECT * FROM BelongTo WHERE member_username=%s AND owner_username=%s AND groupName=%s"
-                #cursor.execute(query, (member_username, owner_username, groupName))
-                #exist = cursor.fetchall()
-                #if (exist):
-                #    error = "%s is already in the group %s made by %s." % (member_username, groupName, owner_username)
-                #    return render_template("home.html", error=error)
-
+                query = "SELECT * FROM Follow WHERE username_followed=%s AND username_follower=%s"
+                cursor.execute(query, (username_follower, username_followed))
+                exist = cursor.fetchall()
+                if exist:
+                    error = "There is already an existing follow request from %s." % (username_followed)
+                    return render_template("follow.html", error=error)
                 query = "INSERT INTO Follow (username_followed, username_follower, followstatus) VALUES (%s, %s, %s)"
                 cursor.execute(query, (username_followed, username_follower, followstatus))
+
         except pymysql.err.IntegrityError:
-            error = "%s does not exist or you have already sent a follow request." % (username_followed)
+            error = "%s does not exist." % (username_followed)
             return render_template("follow.html", error=error)
 
         return redirect(url_for("home"))
+
+#Abstracted pages for accepting and rejecting follows (easier to code)
+#accept and reject display current follow requests and renders forms to choose requests
+@app.route("/accept", methods=["GET"])
+@login_required
+def accept():
+    query = "SELECT * FROM Follow WHERE username_followed=%s AND followstatus=False"
+    currentUser = session["username"]
+    with connection.cursor() as cursor:
+        cursor.execute(query, (currentUser))
+    data = cursor.fetchall()
+    if (not data):
+        error = "You need to recieve a follow request first"
+        return render_template("home.html", error=error)
+    return render_template("accept.html", requests=data)
+
+@app.route("/reject", methods=["GET"])
+@login_required
+def reject():
+    query = "SELECT * FROM Follow WHERE username_followed=%s"
+    currentUser = session["username"]
+    with connection.cursor() as cursor:
+        cursor.execute(query, (currentUser))
+    data = cursor.fetchall()
+    if (not data):
+        error = "You need to recieve a follow request first"
+        return render_template("home.html", error=error)
+    return render_template("reject.html", requests=data)
+
+#The accept/rejectFollow methods processes the forms and updates the tables
+@app.route("/acceptFollow", methods=["POST"])
+@login_required
+def acceptFollow():
+    if request.form:
+        requestData = request.form
+        username_follower = requestData["username_follower"]
+        username_followed = session["username"]
+        followstatus = True
+
+        try:
+            with connection.cursor() as cursor:
+                query = "UPDATE Follow SET followstatus=%s WHERE username_followed=%s AND username_follower=%s"
+                cursor.execute(query, (followstatus, username_followed, username_follower))
+
+        except pymysql.err.IntegrityError:
+            error = "An error has occurred. Please try again."
+            return render_template("home.html", error=error)
+
+        error = "Follow request from %s was accepted" % (username_follower)
+        return render_template("home.html", error=error)
+
+    error = "An error has occurred. Please try again."
+    return render_template("home.html", error=error)
+
+@app.route("/rejectFollow", methods=["POST"])
+@login_required
+def rejectFollow():
+    if request.form:
+        requestData = request.form
+        username_follower = requestData["username_follower"]
+        username_followed = session["username"]
+
+        try:
+            with connection.cursor() as cursor:
+                query = "DELETE FROM Follow WHERE username_follower=%s AND username_followed=%s"
+                cursor.execute(query, (username_follower, username_followed))
+
+        except pymysql.err.IntegrityError:
+            error = "An error has occurred. Please try again."
+            return render_template("home.html", error=error)
+
+        error = "Follow request from %s was rejected" % (username_follower)
+        return render_template("home.html", error=error)
+
+    error = "An error has occurred. Please try again."
+    return render_template("home.html", error=error)
+
 
 
 @app.route("/logout", methods=["GET"])
