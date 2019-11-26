@@ -1,0 +1,24 @@
+<html>
+    <head>
+        <title>Add a Friend</title>
+    </head>
+    <body>
+        <h1>Your Groups</h1>
+      <form action="/addMember" method="post" id="friendForm"></form>
+        <div>
+            {% for group in groups %}
+            <input type="radio" name="groupName" form="friendForm" value="{{group.groupName}},{{group.owner_username}}" required>{{group.groupName}} made by {{group.owner_username}}
+            <br>
+            {% endfor %}
+            <input type="text" name="member_username" form="friendForm" placeholder="Friend's Username" required/>
+            <br><br>
+            <input type="submit" form="friendForm" value="Add to Group">
+            <br>
+        </div>
+        {% if error %}
+            {{ error }}
+        {% endif %}
+        <br>
+        <a href="/home">Return</a>
+    </body>
+</html>
