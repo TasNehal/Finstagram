@@ -1,0 +1,23 @@
+<html>
+    <head>
+        <title>Home</title>
+    </head>
+    <body>
+        <h1>What would you like to do {{ username }}?</h1>
+        <div>
+            <ul>
+                <li><a href="/images">View other people's images</a></li>
+                <li><a href="/upload">Upload your own images</a></li>
+                <li><a href="/viewFollow">See your follow requests</a></li>
+                <li><a href="/follow">Make a follow request</a></li>
+                <li><a href="/createGroup">Create a group</a></li>
+                <li><a href="/addFriend">Add a person to a group you're in</a></li>
+            </ul>
+            {% if error %}
+                {{ error }}
+            {% endif %}
+            <br><br>
+            <button><a href="/logout">Logout</a></button>
+        </div>
+    </body>
+</html>

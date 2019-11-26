@@ -1,0 +1,23 @@
+<html>
+    <head>
+        <title>Group Maker</title>
+    </head>
+    <body>
+        <h1>Create a new group</h1>
+        <div>
+            <form action="/makeGroup" method="post" id="groupForm">
+                <input type="text" name="groupName" placeholder="Group name" required/>
+                <br/>
+                <textarea rows="3" cols="50" name="description" form="groupForm" maxlength="1000"
+                  placeholder="Enter a short description..."></textarea>
+                <br/>
+                <input type="submit" value="Create">
+            </form>
+        </div>
+        {% if error %}
+            {{ error }}
+        {% endif %}
+        <br><br>
+        <button><a href="/home">Return</a></button>
+    </body>
+</html>
