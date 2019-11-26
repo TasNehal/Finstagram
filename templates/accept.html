@@ -1,0 +1,23 @@
+<html>
+    <head>
+        <title>View Follows</title>
+    </head>
+    <body>
+        <h1>You can accept these follow requests</h1>
+        <form action="/acceptFollow" method="post" id="acceptForm"></form>
+        <div>
+            {% for request in requests %}
+            <input type="radio" name="username_follower" form="acceptForm" value="{{request.username_follower}}" required> Request from {{request.username_follower}}
+            <br>
+            {% endfor %}
+            <br><br>
+            <input type="submit" form="acceptForm" value="Accept Request">
+            <br>
+        </div>
+        {% if error %}
+            {{ error }}
+        {% endif %}
+        <br><br>
+        <a href="/home">Return</a>
+    </body>
+</html>

@@ -1,0 +1,16 @@
+<html>
+    <head>
+        <title>Finstagram</title>
+    </head>
+    <body>
+        <h1>Image Gallery</h1>
+        <div>
+            {% for image in images %}
+
+            <img src="/image/{{image.filepath}}" width="300"/>
+            {% endfor %}
+        </div>
+        <br><br>
+        <a href="/home">Return</a>
+    </body>
+</html>

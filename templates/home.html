@@ -6,12 +6,15 @@
         <h1>What would you like to do {{ username }}?</h1>
         <div>
             <ul>
-                <li><a href="/images">View other people's images</a></li>
+                <li><a href="/images">View your image gallery</a></li>
                 <li><a href="/upload">Upload your own images</a></li>
-                <li><a href="/viewFollow">See your follow requests</a></li>
+                <br/>
+                <li><a href="/accept">Accept follow requests</a></li>
+                <li><a href="/reject">Reject follow requests</a></li>
                 <li><a href="/follow">Make a follow request</a></li>
+                <br/>
+                <li><a href="/addFriend">See your groups and add a friend</a></li>
                 <li><a href="/createGroup">Create a group</a></li>
-                <li><a href="/addFriend">Add a person to a group you're in</a></li>
             </ul>
             {% if error %}
                 {{ error }}
