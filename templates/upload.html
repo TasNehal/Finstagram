@@ -5,9 +5,17 @@
     <body>
         <h1>Upload an Image!</h1>
         <div>
-            <form action="/uploadImage" method="post" enctype="multipart/form-data">
+            <form action="/uploadImage" method="post" id="uploadForm" enctype="multipart/form-data">
                 <input type="file" name="imageToUpload" accept="image/*">
+                <br/><br/>
+                Upload to all your followers?
                 <br/>
+                <input type="radio" name="status" form="uploadForm" value="True" required>Yes
+                <input type="radio" name="status" form="uploadForm" value="False" required>No
+                <br/><br/>
+                <textarea rows="3" cols="25" name="caption" form="uploadForm" maxlength="300"
+                  placeholder="Enter a caption..."></textarea>
+                <br/><br/>
                 <input type="submit" value="Upload">
             </form>
         </div>

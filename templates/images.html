@@ -1,14 +1,23 @@
 <html>
     <head>
-        <title>Finstagram</title>
+        <title>Your Images</title>
     </head>
     <body>
-        <h1>Image Gallery</h1>
+        <h1>Choose and image and a available group you want to share that image to</h1>
+        <form action="/sharePhoto" method="post" id="shareForm"></form>
         <div>
             {% for image in images %}
-
-            <img src="/image/{{image.filepath}}" width="300"/>
+              <input type="radio" name="photoID" form="shareForm" value="{{image.photoID}}" required>
+              <img src="/image/{{image.filepath}}" width="300"/>
             {% endfor %}
+            <br/><br/><br/>
+            {% for group in groups %}
+            <input type="radio" name="groupName" form="shareForm" value="{{group.groupName}},{{group.owner_username}}" required>{{group.groupName}} made by {{group.owner_username}}
+            <br>
+            {% endfor %}
+            <br><br>
+            <input type="submit" form="shareForm" value="Add to Group">
+            <br>
         </div>
         <br><br>
         <a href="/home">Return</a>
