@@ -95,7 +95,7 @@ def sharePhoto():
         return render_template('home.html', error=error)
 
     error = "An error has occurred. Please try again."
-    return render_template("createGroup.html", error=error)
+    return render_template("home.html", error=error)
 
 @app.route("/image/<image_name>", methods=["GET"])
 def image(image_name):
