@@ -47,14 +47,55 @@ def home():
 def upload():
     return render_template("upload.html")
 
+#These methods show all the pictures of a user not shared to all followers and allows them to
+#pick an available group to share it too
 @app.route("/images", methods=["GET"])
 @login_required
 def images():
-    query = "SELECT * FROM photo"
-    with connection.cursor() as cursor:
-        cursor.execute(query)
-    data = cursor.fetchall()
-    return render_template("images.html", images=data)
+    query = "SELECT * FROM photo WHERE photoPoster=%s AND allFollowers=%s"
+    groupQuery = "SELECT DISTINCT groupName, owner_username FROM BelongTo WHERE member_username=%s"
+    currentUser=session["username"]
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(query, (currentUser, False))
+        data = cursor.fetchall()
+        if (not data):
+            error = "You don't currently have any photos that aren't shared with all followers"
+            return render_template('home.html', error=error)
+        with connection.cursor() as cursor:
+            cursor.execute(groupQuery, (currentUser))
+        groupData=cursor.fetchall()
+        if (not groupData):
+            error = "You are not currently part of any groups"
+            return render_template('home.html', error=error)
+        return render_template("images.html", images=data, groups=groupData)
+    except pymysql.err.IntegrityError:
+        error = "An error has occured, please try again later"
+        return render_template("home.html", error=error)
+
+@app.route("/sharePhoto", methods=["POST"])
+@login_required
+def sharePhoto():
+    if request.form:
+        requestData = request.form
+        requestData = request.form
+        groupOwner = (requestData["groupName"].split(","))[1]
+        groupName = (requestData["groupName"].split(","))[0]
+        photoID = requestData["photoID"]
+
+        try:
+            with connection.cursor() as cursor:
+                query = "INSERT INTO SharedWith (groupOwner, groupName, photoID) VALUES (%s, %s, %s)"
+                cursor.execute(query, (groupOwner, groupName, photoID))
+        except pymysql.err.IntegrityError:
+            error = "This photo was already shared with %s" % (groupName)
+            return render_template('home.html', error=error)
+
+        error = "Photo has been successfully shared with %s" % (groupName)
+        return render_template('home.html', error=error)
+
+    error = "An error has occurred. Please try again."
+    return render_template("createGroup.html", error=error)
 
 @app.route("/image/<image_name>", methods=["GET"])
 def image(image_name):
@@ -217,13 +258,13 @@ def sendFollow():
                 cursor.execute(query, (username_follower, username_followed))
                 exist = cursor.fetchall()
                 if exist:
-                    error = "There is already an existing follow request from %s." % (username_followed)
+                    error = "There is already an existing follow request from %s or you are already following each other." % (username_followed)
                     return render_template("follow.html", error=error)
                 query = "INSERT INTO Follow (username_followed, username_follower, followstatus) VALUES (%s, %s, %s)"
                 cursor.execute(query, (username_followed, username_follower, followstatus))
 
         except pymysql.err.IntegrityError:
-            error = "%s does not exist." % (username_followed)
+            error = "%s does not exist or follow request already sent." % (username_followed)
             return render_template("follow.html", error=error)
 
         return redirect(url_for("home"))
@@ -246,7 +287,7 @@ def accept():
 @app.route("/reject", methods=["GET"])
 @login_required
 def reject():
-    query = "SELECT * FROM Follow WHERE username_followed=%s"
+    query = "SELECT * FROM Follow WHERE username_followed=%s AND followstatus=False"
     currentUser = session["username"]
     with connection.cursor() as cursor:
         cursor.execute(query, (currentUser))
@@ -311,17 +352,39 @@ def logout():
     session.pop("username")
     return redirect("/")
 
+#redesigned upload image so that if you dont pick allfollowers, there is another
+#function that lets you choose which group gets to see the chosen photo
 @app.route("/uploadImage", methods=["POST"])
 @login_required
 def upload_image():
     if request.files:
+        requestData = request.form
         image_file = request.files.get("imageToUpload", "")
         image_name = image_file.filename
         filepath = os.path.join(IMAGES_DIR, image_name)
         image_file.save(filepath)
-        query = "INSERT INTO photo (timestamp, filePath) VALUES (%s, %s)"
+        caption=requestData["caption"]
+        photoPoster=session["username"]
+        if (requestData["status"] == "True"):
+            allFollowers=True
+        else:
+            allFollowers=False
+        photoQuery = "INSERT INTO photo (postingdate, filePath, allFollowers, caption, photoPoster) VALUES (%s, %s, %s, %s, %s)"
         with connection.cursor() as cursor:
-            cursor.execute(query, (time.strftime('%Y-%m-%d %H:%M:%S'), image_name))
+            cursor.execute(photoQuery, (time.strftime('%Y-%m-%d %H:%M:%S'), image_name, allFollowers, caption, photoPoster))
+            if (allFollowers):
+                searchQuery = "SELECT DISTINCT groupName, owner_username FROM BelongTo WHERE member_username=%s"
+                cursor.execute(searchQuery, (photoPoster))
+                groups=cursor.fetchall()
+                idQuery = "SELECT MAX(photoID) as id FROM photo"
+                cursor.execute(idQuery)
+                photoID = cursor.fetchone()["id"]
+                sharedQuery = "INSERT INTO SharedWith (groupOwner, groupName, photoID) VALUES (%s, %s, %s)"
+                for group in groups:
+                    groupName=group["groupName"]
+                    groupOwner=group["owner_username"]
+                    cursor.execute(sharedQuery, (groupOwner, groupName, photoID))
+
         message = "Image has been successfully uploaded."
         return render_template("upload.html", message=message)
     else:
