@@ -345,6 +345,32 @@ def rejectFollow():
     error = "An error has occurred. Please try again."
     return render_template("home.html", error=error)
 
+#function to see other people's photos and additional info like id, time, likes, etc.
+@app.route("/gallery", methods=["GET"])
+@login_required
+def gallery():
+    #3 queries to get the visible photos, tags, and Likes
+    #select everything from likes and tags and use the jinja template in gallery.html to display the right values
+    photoQuery = "SELECT DISTINCT photoID, postingdate, caption, photoPoster, filepath FROM photo WHERE photoPoster IN (SELECT username_followed FROM follow WHERE followstatus = 1 AND username_follower=%s) OR photoID IN ( SELECT photoID FROM sharedwith NATURAL JOIN belongto WHERE member_username=%s) ORDER BY postingdate DESC"
+    tagQuery = "SELECT * FROM tagged WHERE tagstatus=True"
+    likeQuery = "SELECT * FROM likes"
+    currentUser=session["username"]
+
+    with connection.cursor() as cursor:
+        cursor.execute(photoQuery, (currentUser, currentUser))
+        photos=cursor.fetchall()
+
+        cursor.execute(tagQuery)
+        tags=cursor.fetchall()
+
+        cursor.execute(likeQuery)
+        likes=cursor.fetchall()
+
+    return render_template("gallery.html", photos=photos, likes=likes, tags=tags)
+
+
+
+
 
 
 @app.route("/logout", methods=["GET"])
