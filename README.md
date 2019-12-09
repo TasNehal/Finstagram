@@ -1,7 +1,7 @@
 # Finstagram
 Current features:
 
-Create a group (Feature 12),
+Create a group (Feature 12), /n
 Add a user to a group (Feature 13),
 Manage follow requests (Feature 6),
 Upload photo (Feature 3)
