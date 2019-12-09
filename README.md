@@ -1,4 +1,6 @@
 # Finstagram
+Tasnim Nehal (worked solo)
+
 Current features:
 
 Create a group (Feature 12), 
