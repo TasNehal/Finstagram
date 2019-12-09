@@ -1,0 +1,43 @@
+<html>
+    <head>
+        <title>Gallery</title>
+    </head>
+    <body>
+        <h1>See photos from your groups and followees</h1>
+        <div>
+        <ul>
+          {% for photo in photos %}
+            <li>
+              <img src="/image/{{photo.filepath}}" width="300"/> </br>
+              photoID: {{photo.photoID}} </br>
+              photoPoster: {{photo.photoPoster}} </br>
+              caption: {{photo.caption}} </br>
+              postingdate: {{photo.postingdate}} </br> </br>
+
+              Likes: </br>
+              <ul style="list-style-type:none;">
+              {% for like in likes %}
+                {% if photo.photoID == like.photoID %}
+                  <li>{{like.username}} gave a rating of {{like.rating}}</li>
+                {% endif %}
+              {% endfor %}
+            </ul> </br>
+
+            Tags: </br>
+            <ul style="list-style-type:none;">
+            {% for tag in tags %}
+              {% if photo.photoID == tag.photoID %}
+                <li>{{tag.username}}</li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+
+            </br>
+            </li>
+          {% endfor %}
+        </ul>
+        </div>
+        <br><br>
+        <a href="/home">Return</a>
+    </body>
+</html>
