@@ -230,7 +230,8 @@ def addMember():
             error = "%s is already in the group %s made by %s or does not exist." % (member_username, groupName, owner_username)
             return render_template("addFriend.html", error=error)
 
-        return redirect(url_for("home"))
+        error = "%s has been added to group %s made by %s" % (member_username, groupName, owner_username)
+        return render_template("home.html", error=error)
 
     error = "An error has occurred. Please try again."
     return render_template("addFriend.html", error=error)
