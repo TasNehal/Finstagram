@@ -351,9 +351,9 @@ def rejectFollow():
 def gallery():
     #3 queries to get the visible photos, tags, and Likes
     #select everything from likes and tags and use the jinja template in gallery.html to display the right values
-    photoQuery = "SELECT DISTINCT photoID, postingdate, caption, photoPoster, filepath FROM photo WHERE photoPoster IN (SELECT username_followed FROM follow WHERE followstatus = 1 AND username_follower=%s) OR photoID IN ( SELECT photoID FROM sharedwith NATURAL JOIN belongto WHERE member_username=%s) ORDER BY postingdate DESC"
-    tagQuery = "SELECT * FROM tagged WHERE tagstatus=True"
-    likeQuery = "SELECT * FROM likes"
+    photoQuery = "SELECT DISTINCT photoID, postingdate, caption, photoPoster, filepath, firstName, lastName FROM photo INNER JOIN person ON person.username = photo.photoPoster WHERE photoPoster IN (SELECT username_followed FROM follow WHERE followstatus = 1 AND username_follower=%s) OR photoID IN ( SELECT photoID FROM sharedwith NATURAL JOIN belongto WHERE member_username=%s) ORDER BY postingdate DESC"
+    tagQuery = "SELECT * FROM tagged NATURAL JOIN person WHERE tagstatus=True"
+    likeQuery = "SELECT * FROM likes NATURAL JOIN person"
     currentUser=session["username"]
 
     with connection.cursor() as cursor:
