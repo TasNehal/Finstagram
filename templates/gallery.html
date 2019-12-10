@@ -11,6 +11,7 @@
               <img src="/image/{{photo.filepath}}" width="300"/> </br>
               photoID: {{photo.photoID}} </br>
               photoPoster: {{photo.photoPoster}} </br>
+              Name: {{photo.firstName}} {{photo.lastName}} </br>
               caption: {{photo.caption}} </br>
               postingdate: {{photo.postingdate}} </br> </br>
 
@@ -18,7 +19,7 @@
               <ul style="list-style-type:none;">
               {% for like in likes %}
                 {% if photo.photoID == like.photoID %}
-                  <li>{{like.username}} gave a rating of {{like.rating}}</li>
+                  <li>{{like.username}} ({{like.firstName}}, {{like.lastName}}) gave a rating of {{like.rating}}</li>
                 {% endif %}
               {% endfor %}
             </ul> </br>
@@ -27,7 +28,7 @@
             <ul style="list-style-type:none;">
             {% for tag in tags %}
               {% if photo.photoID == tag.photoID %}
-                <li>{{tag.username}}</li>
+                <li>{{tag.username}} ({{tag.firstName}}, {{tag.lastName}})</li>
               {% endif %}
             {% endfor %}
           </ul>
