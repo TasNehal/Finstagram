@@ -1,18 +1,18 @@
 # Finstagram
-Tasnim Nehal (worked solo)
+A python photo sharing web app made with a Flask backend for Databases
 
 Current features:
 
-Create a group (Feature 12), 
+Create a group, 
 
-Add a user to a group (Feature 13),
+Add a user to a group,
 
-Manage follow requests (Feature 6),
+Manage follow request,
 
-Upload photo (Feature 3),
+Upload photo,
 
-View photos (Feature 1),
+View photos,
 
-See additional photo information (Feature 1)
+See additional photo information 
 
 
